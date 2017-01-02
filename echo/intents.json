@@ -70,7 +70,37 @@
         }   
       ]
     },
-
+    
+    {
+      "intent": "ArtistRadioIntent",
+      "slots": [
+        {
+            "name": "Name",
+            "type": "NAMES"
+        },
+        {
+            "name": "Room",
+            "type": "ROOMS"
+        }   
+      ]
+    },
+    {
+      "intent": "ServicePlaylistIntent",
+      "slots": [
+        {
+            "name": "Name",
+            "type": "NAMES"
+        },
+        {
+            "name": "Room",
+            "type": "ROOMS"
+        },
+        {
+            "name": "Service",
+            "type": "SERVICES"
+        }   
+      ]
+    },
     {
       "intent": "PlayMoreByArtistIntent",
       "slots": [
@@ -416,6 +446,10 @@
           "type" : "ROOMS"
         }
       ]
+    },
+      
+    {
+      "intent": "AMAZON.YesIntent"
     }
     
   ]

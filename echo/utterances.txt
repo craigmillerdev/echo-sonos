@@ -43,6 +43,11 @@ MusicRadioIntent play {Name} radio in {Room}
 
 MusicRadioIntent play {Name} radio
 
+ArtistRadioIntent play {Name} artist radio in the {Room}
+ArtistRadioIntent play {Name} artist radio in {Room}
+
+ArtistRadioIntent play {Name} artist radio
+
 PlayPresetIntent play preset {Preset}
 
 PlaylistIntent playlist {Preset} in {Room}
@@ -53,11 +58,21 @@ PlaylistIntent start playlist {Preset} in {Room}
 PlaylistIntent start playlist {Preset} in the {Room}
 
 PlaylistIntent playlist {Preset}
-PlaylistIntent playlist {Preset}
-PlaylistIntent play playlist {Preset}
 PlaylistIntent play playlist {Preset}
 PlaylistIntent start playlist {Preset}
-PlaylistIntent start playlist {Preset}
+
+ServicePlaylistIntent {Service} playlist {Name} in {Room}
+ServicePlaylistIntent {Service} playlist {Name} in the {Room}
+ServicePlaylistIntent play a {Service} playlist {Name} in {Room}
+ServicePlaylistIntent play a {Service} playlist {Name} in the {Room}
+ServicePlaylistIntent start a {Service} playlist {Name} in {Room}
+ServicePlaylistIntent start a {Service} playlist {Name} in the {Room}
+ServicePlaylistIntent find a {Service} playlist like {Name} in the {Room}
+
+ServicePlaylistIntent {Service} playlist {Name}
+ServicePlaylistIntent play a {Service} playlist {Name}
+ServicePlaylistIntent start a {Service} playlist {Name}
+ServicePlaylistIntent find a {Service} playlist {Name}
 
 FavoriteIntent favorite {Preset} in {Room}
 FavoriteIntent favorite {Preset} in the {Room}
@@ -67,10 +82,7 @@ FavoriteIntent start favorite {Preset} in {Room}
 FavoriteIntent start favorite {Preset} in the {Room}
 
 FavoriteIntent favorite {Preset}
-FavoriteIntent favorite {Preset}
 FavoriteIntent play favorite {Preset}
-FavoriteIntent play favorite {Preset}
-FavoriteIntent start favorite {Preset}
 FavoriteIntent start favorite {Preset}
 
 SiriusXMStationIntent start sirius XM {Station} in the {Room}

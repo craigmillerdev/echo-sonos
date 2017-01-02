@@ -35,38 +35,63 @@ EchoSonos.prototype.intentHandlers = {
     AlbumIntent: function (intent, session, response) {
         console.log("AlbumIntent received");
         loadCurrentRoomAndService('DefaultEcho', intent.slots.Room.value, function(room, service) {
-        	musicHandler(room, service, '/album/', intent.slots.Name.value, response);
+        	musicHandler(room, service, '/album/', intent.slots.Name.value, response, session);
         });  
     },
 
     ArtistIntent: function (intent, session, response) {
         console.log("MusicIntent received for room " + intent.slots.Room.value);
         loadCurrentRoomAndService('DefaultEcho', intent.slots.Room.value, function(room, service) {
-	        musicHandler(room, service, '/song/', 'artist:' + intent.slots.Name.value, response);
+	        musicHandler(room, service, '/song/', 'artist:' + intent.slots.Name.value, response, session);
         });  
     },
 
     TrackIntent: function (intent, session, response) {
         console.log("MusicIntent received for room " + intent.slots.Room.value);
         loadCurrentRoomAndService('DefaultEcho', intent.slots.Room.value, function(room, service) {
-	        musicHandler(room, service, '/song/', 'track:' + intent.slots.Name.value, response);
+	        musicHandler(room, service, '/song/', 'track:' + intent.slots.Name.value, response, session);
         });  
     },
 
     MusicIntent: function (intent, session, response) {
         console.log("MusicIntent received for room " + intent.slots.Room.value);
         loadCurrentRoomAndService('DefaultEcho', intent.slots.Room.value, function(room, service) {
-	        musicHandler(room, service, '/song/', intent.slots.Name.value, response);
+	        musicHandler(room, service, '/song/', intent.slots.Name.value, response, session);
         });  
     },
 
     MusicRadioIntent: function (intent, session, response) {
-        console.log("MusicRadioIntent received");
+        console.log("MusicRadioIntent received" + intent.slots.Room.value);
         loadCurrentRoomAndService('DefaultEcho', intent.slots.Room.value, function(room, service) {
-	        musicHandler(room, service, '/station/', intent.slots.Name.value, response);
+            console.log("MusicRadioIntent found room: " + room);
+	        musicHandler(room, service, '/station/', intent.slots.Name.value, response, session);
         });  
     },
-
+    
+    ArtistRadioIntent: function (intent, session, response) {
+        console.log("ArtistRadioIntent received" + intent.slots.Room.value);
+        loadCurrentRoomAndService('DefaultEcho', intent.slots.Room.value, function(room, service) {
+            console.log("ArtistRadioIntent found room: " + room);
+	        musicHandler(room, service, '/station/', 'artist:' + intent.slots.Name.value, response, session);
+        });  
+    },
+    
+    ServicePlaylistIntent: function (intent, session, response) {
+        console.log("Name: " + intent.slots.Name.value);
+        if(!intent.slots.Service.value) {
+        	reponse.tell("Sorry I didn't catch the service name");
+        	return;
+        }
+        if(!intent.slots.Name.value) {
+        	reponse.tell("Sorry I didn't catch what you wanted me to search " + intent.slots.Service.value + " for");
+        	return;
+        }
+        loadCurrentRoomAndService('DefaultEcho', intent.slots.Room.value, function(room, service) {
+            console.log("ServicePlaylistIntent received for " + room);
+	        musicHandler(room, intent.slots.Service.value, '/playlist/', intent.slots.Name.value, response, session);
+        });  
+    },
+    
     PlayMoreByArtistIntent: function (intent, session, response) {
         console.log("PlayMoreByArtist received");
         loadCurrentRoomAndService('DefaultEcho', intent.slots.Room.value, function(room, service) {
@@ -333,11 +358,33 @@ EchoSonos.prototype.intentHandlers = {
         httpreq(options, function(error) {
             genericResponse(error, response);
         });
+    },
+    
+    'AMAZON.YesIntent': function (intent, session, response) {
+        console.log("AMAZON.YesIntent received");
+
+        if (! session.attributes.listIndex ) {
+        	session.attributes.listIndex = 0;
+        }
+        if( session.attributes.previousResponse.list ) {
+            musicHandler(
+            		session.attributes.room,
+            		session.attributes.service,
+            		session.attributes.cmdpath + 'id:' + session.attributes.previousResponse.list[session.attributes.listIndex].id,
+            		session.attributes.previousResponse.list[session.attributes.listIndex].name,
+            		response,
+            		session
+            );
+        }
+        if(!session.attributes.previousResponse) {
+        	response.tell("Sorry. I don't know what you want");
+        }
+        
     }
 }
 
 /** Handles Apple Music, Spotify, Deezer, library, or presets. The default can be specified in options.js or changed if advanced mode is turned on */
-function musicHandler(roomValue, service, cmdpath, name, response) {
+function musicHandler(roomValue, service, cmdpath, name, response, session) {
     
     if (service == 'presets') {
         options.path = '/preset/' + encodeURIComponent(name);
@@ -348,15 +395,35 @@ function musicHandler(roomValue, service, cmdpath, name, response) {
         var skillPath = '/musicsearch/' + service.toLowerCase() + cmdpath + encodeURIComponent(name);
         var msgStart = (cmdpath.startsWith('/station'))?'Started ':'Queued and started ';
         var msgEnd = (cmdpath.startsWith('/station'))?' radio':'';
-    
+        console.log("skillPath: " + skillPath);
         actOnCoordinator(options, skillPath, roomValue, function(error, responseBodyJson) {
         	if (error) {
             	response.tell(error.message);
           	} else {
-            	response.tell(msgStart + name + msgEnd);
+          		var responseBody = JSON.parse(responseBodyJson);
+            	if (responseBody.status == "interact") {
+            		session.attributes.previousResponse = responseBody;
+            		session.attributes.room = roomValue;
+            		session.attributes.service = service;
+            		session.attributes.cmdpath = cmdpath;
+            		console.log("Asking:" + parseMessage(responseBody));
+            		response.ask(parseMessage(responseBody));
+            	} else {
+            		response.tell(msgStart + name + msgEnd);
+            	}
             }
         });
     }
+}
+
+function parseMessage(responseBody){
+	
+	if (! responseBody.list ) {
+		return responseBody.message;
+	}
+	
+	return responseBody.message.replace('%s', responseBody.list[0].name);
+	
 }
 
 /** Handles Apple Music - plays artist tracks or plays a radio station for the current track */
@@ -768,10 +835,13 @@ function actOnCoordinator(options, actionPath, room, onCompleteFun) {
         if (!error) { 
             responseJson = JSON.parse(responseJson);
             var coordinatorRoomName = findCoordinatorForRoom(responseJson, room);
-            
-            options.path = '/' + encodeURIComponent(coordinatorRoomName) + actionPath;
-            console.log(options.path);
-            httpreq(options, onCompleteFun);
+            if ( coordinatorRoomName != undefined ) {
+                options.path = '/' + encodeURIComponent(coordinatorRoomName) + actionPath;
+                console.log(options.path);
+                httpreq(options, onCompleteFun);
+            } else {
+                onCompleteFun( new Error("Unable to find controller for room " + room ) );
+            }
         }    
         else { 
             onCompleteFun(error);
