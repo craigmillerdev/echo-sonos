@@ -450,6 +450,19 @@
       
     {
       "intent": "AMAZON.YesIntent"
+    },
+      
+    {
+      "intent": "FirstIntent"
+    },
+    {
+      "intent": "SecondIntent"
+    },
+    {
+      "intent": "ThirdIntent"
+    },
+    {
+      "intent": "HearMoreIntent"
     }
     
   ]

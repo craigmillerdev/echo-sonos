@@ -61,18 +61,16 @@ PlaylistIntent playlist {Preset}
 PlaylistIntent play playlist {Preset}
 PlaylistIntent start playlist {Preset}
 
-ServicePlaylistIntent {Service} playlist {Name} in {Room}
-ServicePlaylistIntent {Service} playlist {Name} in the {Room}
-ServicePlaylistIntent play a {Service} playlist {Name} in {Room}
-ServicePlaylistIntent play a {Service} playlist {Name} in the {Room}
-ServicePlaylistIntent start a {Service} playlist {Name} in {Room}
-ServicePlaylistIntent start a {Service} playlist {Name} in the {Room}
-ServicePlaylistIntent find a {Service} playlist like {Name} in the {Room}
+ServicePlaylistIntent {Service} playlist {Preset} in {Room}
+ServicePlaylistIntent {Service} playlist {Preset} in the {Room}
+ServicePlaylistIntent find me a {Service} playlist like {Preset} in the {Room}
+ServicePlaylistIntent find a {Service} playlist like {Preset} in the {Room}
+ServicePlaylistIntent find me a {Service} playlist like {Preset} in {Room}
+ServicePlaylistIntent find a {Service} playlist like {Preset} in {Room}
 
-ServicePlaylistIntent {Service} playlist {Name}
-ServicePlaylistIntent play a {Service} playlist {Name}
-ServicePlaylistIntent start a {Service} playlist {Name}
-ServicePlaylistIntent find a {Service} playlist {Name}
+ServicePlaylistIntent {Service} playlist {Preset}
+ServicePlaylistIntent find a {Service} playlist like {Preset}
+ServicePlaylistIntent find me a {Service} playlist like {Preset}
 
 FavoriteIntent favorite {Preset} in {Room}
 FavoriteIntent favorite {Preset} in the {Room}
@@ -384,3 +382,13 @@ UngroupIntent ungroup {Room}
 UngroupIntent ungroup the {Room}
 UngroupIntent isolate {Room}
 UngroupIntent isolate the {Room}
+
+
+FirstIntent first
+FirstIntent the first
+SecondIntent second
+SecondIntent the second
+ThirdIntent third
+ThirdIntent the third
+
+HearMoreIntent hear more
