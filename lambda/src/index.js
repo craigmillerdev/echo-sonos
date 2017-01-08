@@ -291,9 +291,12 @@ EchoSonos.prototype.intentHandlers = {
     	    httpreq(options, function (error, responseJson) {
 	            if (!error) {
    		            responseJson = JSON.parse(responseJson);
-   	 		        var randResponse = Math.floor(Math.random() * STATE_RESPONSES.length);
-            	    var responseText = STATE_RESPONSES[randResponse].replace("$currentTitle", responseJson.currentTrack.title).replace("$currentArtist", responseJson.currentTrack.artist);
-                	response.tell(responseText);
+   	 		        if ( responseJson.currentTrack.type === 'radio' ) {
+   	 		            var responseText = "We are listening to " + responseJson.currentTrack.stationName;
+   	 		        } else {
+   	   	 		        var randResponse = Math.floor(Math.random() * STATE_RESPONSES.length);
+   	 		        	var responseText = STATE_RESPONSES[randResponse].replace("$currentTitle", responseJson.currentTrack.title).replace("$currentArtist", responseJson.currentTrack.artist);
+   	 		        }response.tell(responseText);
             	}
             	else { 
                 	response.tell(error.message);
