@@ -89,6 +89,10 @@ EchoSonos.prototype.intentHandlers = {
     ServicePlaylistIntent: function (intent, session, response) {
         console.log("Preset: " + intent.slots.Preset.value);
         console.log("Service: " + intent.slots.Service.value);
+
+        session.attributes.listLimit = 3;
+        session.attributes.listPage = 1;
+        
         if(!intent.slots.Preset.value) {
         	response.tell("Sorry I didn't catch what you wanted me to search " + intent.slots.Service.value + " for");
         	return;
@@ -384,29 +388,18 @@ EchoSonos.prototype.intentHandlers = {
     
     HearMoreIntent: function (intent, session, response) {
         console.log("HearMoreIntent received");
-        response.tell('Sorry I have not been told how to do that yet.');
-    },
-    
-    'AMAZON.YesIntent': function (intent, session, response) {
-        console.log("AMAZON.YesIntent received");
 
-        if (! session.attributes.listIndex ) {
-        	session.attributes.listIndex = 0;
-        }
-        if( session.attributes.previousResponse.list ) {
-            musicHandler(
-            		session.attributes.room,
-            		session.attributes.service,
-            		session.attributes.cmdpath + 'id:' + session.attributes.previousResponse.list[session.attributes.listIndex].id,
-            		session.attributes.previousResponse.list[session.attributes.listIndex].name,
-            		response,
-            		session
-            );
-        }
-        if(!session.attributes.previousResponse) {
-        	response.tell("Sorry. I don't know what you want");
-        }
+        session.attributes.listPage = session.attributes.listPage + 1;
         
+        musicHandler(
+        		session.attributes.room,
+        		session.attributes.service,
+        		session.attributes.cmdpath,
+        		session.attributes.name,
+        		response,
+        		session
+        );
+
     }
 }
 
@@ -431,6 +424,12 @@ function musicHandler(roomValue, service, cmdpath, name, response, session) {
         });
     } else { 
         var skillPath = '/musicsearch/' + service + cmdpath + encodeURIComponent(name);
+        if ( session.attributes.listLimit ) {
+        	skillPath += '|' + session.attributes.listLimit;
+        	if ( session.attributes.listPage ) {
+            	skillPath += '|' + session.attributes.listPage;
+            }
+        }
         var msgStart = (cmdpath.startsWith('/station'))?'Started ':'Queued and started ';
         var msgEnd = (cmdpath.startsWith('/station'))?' radio':'';
         console.log("skillPath: " + skillPath);
@@ -444,8 +443,9 @@ function musicHandler(roomValue, service, cmdpath, name, response, session) {
             		session.attributes.room = roomValue;
             		session.attributes.service = service;
             		session.attributes.cmdpath = cmdpath;
-            		console.log("Asking:" + parseMessage(responseBody));
-            		response.ask( { type: 'SSML', speech: parseMessage(responseBody) } );
+            		session.attributes.name = name;
+            		console.log("Asking:" + parseMessage(responseBody, session));
+            		response.ask( { type: 'SSML', speech: parseMessage(responseBody, session) } );
             	} else if (responseBody.status == "error") {
             		console.log("Error:" + responseBody.error );
             		response.tell( responseBody.error );
@@ -459,13 +459,14 @@ function musicHandler(roomValue, service, cmdpath, name, response, session) {
 
 
 
-function parseMessage(responseBody){
+function parseMessage(responseBody, session){
 
 	if ( ! responseBody.list ) {
 		return '<speak>' + responseBody.message + '</speak>';
 	}
 	var description =  responseBody.type||'result';
-	var returnMessage = '<speak>The top ' + description.toSpeech() + 's are ';
+	var thisList = ( session.attributes.listPage > 1 ) ? 'next' : 'top';
+	var returnMessage = '<speak>The ' + thisList + ' ' + responseBody.list.length + ' ' + description.toSpeech() + 's are ';
 	var ordinals = '';
 	for (var i=0; i < responseBody.list.length; i++) {
 		returnMessage += '<break time="0.3s"/>' +  responseBody.list[i].name.toSpeech();
@@ -475,7 +476,7 @@ function parseMessage(responseBody){
 		}
 	}
 	
-	returnMessage += '<break time="0.3s"/> Would you like the ' + ordinals + ' ' + description.toSpeech() + '<break time="0.3s"/> or would you like to Hear More?</speak>';
+	returnMessage += '<break time="0.3s"/> Would you like the ' + ordinals + ' ' + description.toSpeech() + '<break time="0.1s"/> or would you like to Hear More?</speak>';
 	
 	return returnMessage;
 	
