@@ -1,6 +1,17 @@
 # echo-sonos
 All of the pieces for an Amazon Echo (Alexa) <-> Sonos integration.
 
+#About the `craigmillerdev` fork
+This fork has quite a few changes all around the Deezer music service and TuneIn. I have no idea if I have broken other services as I don't use them.
+
+You will also need my fork of the node-sonos-http-api: https://github.com/craigmillerdev/node-sonos-http-api
+
+## Some additional `craigmillerdev` commands
+* Find a Deezer playlist: "Alexa, ask sonos to find a deezer playlist like dance" or if you have Deezer as your default service simply "Alexa, ask sonos to find a playlist like dance" - follow the prompts to choose from the list found.
+* Start a Deezer Artist radio: "Alexa, ask sonos to play will smith artist radio".
+* Find a TuneIn station: "Alexa, ask sonos to find a tunein radio station like Radio 1" - follow the prompts to choose from the list found.
+* Tune to a known TuneIn station: "Alexa, ask sonos to tune to BBC Radio 1" - It'll try to match the TuneIn station from this list: https://github.com/craigmillerdev/node-sonos-http-api/blob/master/lib/tunein-stations.json
+
 # Usage
 
 Global commands (no rooms required):
