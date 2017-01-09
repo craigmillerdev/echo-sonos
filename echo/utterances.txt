@@ -93,6 +93,12 @@ SiriusXMChannelIntent start sirius XM channel {Channel}
 SiriusXMChannelIntent tune to sirius XM channel {Channel} in the {Room}
 SiriusXMChannelIntent tune to sirius XM channel {Channel}
 
+TuneIntent tune to {TuneInStation} in the {Room}
+TuneIntent tune to {TuneInStation} in {Room}
+TuneIntent tune to {TuneInStation}
+
+PandoraMusicIntent tune to pandora {Name}
+
 PandoraMusicIntent tune to pandora {Name} in the {Room}
 PandoraMusicIntent tune to pandora {Name} in {Room}
 

@@ -32,7 +32,9 @@ if (!String.prototype.toSpeech) {
                .replace(/</g, 'less than')
                .replace(/>/g, 'greater than')
                .replace(/"/g, '')
-               .replace(/'/g, '');
+               .replace(/'/g, '')
+               .replace(/\.\.\./g, '')
+               .replace(/ - /g, ' ');
   };
 }
 
@@ -72,6 +74,8 @@ EchoSonos.prototype.intentHandlers = {
 
     MusicRadioIntent: function (intent, session, response) {
         console.log("MusicRadioIntent received" + intent.slots.Room.value);
+        session.attributes.listLimit = 3;
+        session.attributes.listPage = 1;
         loadCurrentRoomAndService('DefaultEcho', intent.slots, function(room, service) {
             console.log("MusicRadioIntent found room: " + room);
 	        musicHandler(room, service, '/station/', intent.slots.Name.value, response, session);
@@ -87,12 +91,8 @@ EchoSonos.prototype.intentHandlers = {
     },
     
     ServicePlaylistIntent: function (intent, session, response) {
-        console.log("Preset: " + intent.slots.Preset.value);
-        console.log("Service: " + intent.slots.Service.value);
-
         session.attributes.listLimit = 3;
         session.attributes.listPage = 1;
-        
         if(!intent.slots.Preset.value) {
         	response.tell("Sorry I didn't catch what you wanted me to search " + intent.slots.Service.value + " for");
         	return;
@@ -116,7 +116,14 @@ EchoSonos.prototype.intentHandlers = {
 	        moreMusicHandler(room, service, '/station/', response);
         });  
     },
-
+ 
+    TuneIntent: function (intent, session, response) {
+        console.log("TuneIntent received");
+        loadCurrentRoomAndService('DefaultEcho', intent.slots, function(room, service) {
+	        tuneHandler(room, intent.slots.TuneInStation.value, response);
+	    });
+    },
+    
     SiriusXMStationIntent: function (intent, session, response) {
         console.log("SiriusXMStationIntent received");
         loadCurrentRoomAndService('DefaultEcho', intent.slots, function(room, service) {
@@ -296,7 +303,8 @@ EchoSonos.prototype.intentHandlers = {
    	 		        } else {
    	   	 		        var randResponse = Math.floor(Math.random() * STATE_RESPONSES.length);
    	 		        	var responseText = STATE_RESPONSES[randResponse].replace("$currentTitle", responseJson.currentTrack.title).replace("$currentArtist", responseJson.currentTrack.artist);
-   	 		        }response.tell(responseText);
+   	 		        }
+   	 		        response.tell(responseText);
             	}
             	else { 
                 	response.tell(error.message);
@@ -407,11 +415,12 @@ EchoSonos.prototype.intentHandlers = {
 }
 
 function listPlayMusicHandler(session, index, response) {
+	session.attributes.listLimit = session.attributes.listPage = false;
     musicHandler(
     		session.attributes.room,
     		session.attributes.service,
-    		session.attributes.cmdpath + 'id:' + session.attributes.previousResponse.list[index].id,
-    		session.attributes.previousResponse.list[index].name,
+    		session.attributes.cmdpath + 'id:' + session.attributes.previousResponse.list[index].id + '&amp;name:' + session.attributes.previousResponse.list[index].name,
+    		'',
     		response,
     		session
     );
@@ -518,6 +527,25 @@ function siriusXMHandler(roomValue, name, type, response) {
         	genericResponse(error, response);
     	} else {
           	response.tell('Sirius XM ' + type + ' ' + name + ' started');
+    	}
+    });
+}
+
+/** Handles TuneIn Radio */
+function tuneHandler(roomValue, name, response) {
+
+	var skillPath = '/tune/' + encodeURIComponent(name.replace(' ','+'));
+	
+    actOnCoordinator(options, skillPath, roomValue, function(error, responseBodyJson) {
+    	if (error) {
+        	genericResponse(error, response);
+    	} else {
+    		var responseBody = JSON.parse(responseBodyJson);
+    		if (responseBody.message) {
+          		response.tell( responseBody.message );
+          	} else {
+          		response.tell('Sorry something went wrong.');
+    		}
     	}
     });
 }

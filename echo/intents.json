@@ -67,6 +67,10 @@
         {
             "name": "Room",
             "type": "ROOMS"
+        },
+        {
+            "name": "Service",
+            "type": "SERVICES"
         }   
       ]
     },
@@ -88,8 +92,8 @@
       "intent": "ServicePlaylistIntent",
       "slots": [
         {
-            "name": "Name",
-            "type": "NAMES"
+            "name": "Preset",
+            "type": "PRESETS"
         },
         {
             "name": "Room",
@@ -149,6 +153,19 @@
       ]
     },
       
+    {  
+      "intent": "TuneIntent",
+      "slots": [
+        {
+            "name": "TuneInStation",
+            "type": "TUNEINSTATIONS"
+        },
+        {
+            "name": "Room",
+            "type": "ROOMS"
+        }   
+      ]
+    },
     {
       "intent": "PandoraMusicIntent",
       "slots": [
