@@ -106,14 +106,14 @@ EchoSonos.prototype.intentHandlers = {
     PlayMoreByArtistIntent: function (intent, session, response) {
         console.log("PlayMoreByArtist received");
         loadCurrentRoomAndService('DefaultEcho', intent.slots, function(room, service) {
-	        moreMusicHandler(room, service, '/song/', response);
+	        moreMusicHandler(room, service, '/song/', response, session);
         });  
     },
 
     PlayMoreLikeTrackIntent: function (intent, session, response) {
         console.log("PlayMoreLikeTrackIntent received");
         loadCurrentRoomAndService('DefaultEcho', intent.slots, function(room, service) {
-	        moreMusicHandler(room, service, '/station/', response);
+	        moreMusicHandler(room, service, '/station/', response, session);
         });  
     },
  
@@ -298,7 +298,7 @@ EchoSonos.prototype.intentHandlers = {
     	    httpreq(options, function (error, responseJson) {
 	            if (!error) {
    		            responseJson = JSON.parse(responseJson);
-   	 		        if ( responseJson.currentTrack.type === 'radio' ) {
+   	 		        if ( responseJson.currentTrack.type === 'radio' && responseJson.currentTrack.title.includes('x-sonos') ) {
    	 		            var responseText = "We are listening to " + responseJson.currentTrack.stationName;
    	 		        } else {
    	   	 		        var randResponse = Math.floor(Math.random() * STATE_RESPONSES.length);
@@ -419,7 +419,7 @@ function listPlayMusicHandler(session, index, response) {
     musicHandler(
     		session.attributes.room,
     		session.attributes.service,
-    		session.attributes.cmdpath + 'id:' + session.attributes.previousResponse.list[index].id + '&amp;name:' + session.attributes.previousResponse.list[index].name,
+    		session.attributes.cmdpath + 'id:' + session.attributes.previousResponse.list[index].id + '&amp;name:' + encodeURIComponent(session.attributes.previousResponse.list[index].name),
     		'',
     		response,
     		session
@@ -495,7 +495,7 @@ function parseMessage(responseBody, session){
 }
 
 /** Handles Apple Music - plays artist tracks or plays a radio station for the current track */
-function moreMusicHandler(roomValue, service, cmdpath, response) {
+function moreMusicHandler(roomValue, service, cmdpath, response, session) {
     options.path = '/' + encodeURIComponent(roomValue) + '/state';
 
     httpreq(options, function (error, responseJson) {
@@ -507,7 +507,7 @@ function moreMusicHandler(roomValue, service, cmdpath, response) {
             	if (cmdpath.startsWith('/station') && (['apple','spotify','deezer','elite'].indexOf(service) != -1)) {
                 	name += ' ' + responseJson.currentTrack.title;
             	}    
-	            musicHandler(roomValue, service, cmdpath, name, response);
+	            musicHandler(roomValue, service, cmdpath, name, response, session);
 	        } else {
             	response.tell("The current artist is not identified");
 	        }
