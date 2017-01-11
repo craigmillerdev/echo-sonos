@@ -224,7 +224,7 @@ EchoSonos.prototype.intentHandlers = {
 
     ResumeIntent: function (intent, session, response) {
         console.log("ResumeIntent received");
-        loadCurrentRoomAndService('DefaultEcho', intent.slots.Room.value, function(room, service) {
+        loadCurrentRoomAndService('DefaultEcho', intent.slots, function(room, service) {
 	        options.path = '/' + encodeURIComponent(room) + '/play';
     	    httpreq(options, function(error) {
         	    genericResponse(error, response);
